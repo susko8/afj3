@@ -8,6 +8,6 @@ class NKAutomata:
 
     def __repr__(self):
         s = 'NKA: \n'
-        for i in self.states:
-            s += i.__repr__() + '\n'
+        for i, item in self.states.items():
+            s += item.__repr__() + '\n'
         return s

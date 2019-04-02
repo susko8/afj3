@@ -1,12 +1,21 @@
 import copy
 from dka_state import DKAState
 from nka_state import NKAState
+from nka_automata import NKAutomata
 
 
 def find_starting_state(automata):
     for index, state in automata.states.items():
         if state.is_initial:
             return state
+
+
+def find_accepting_states(automata):
+    sts = []
+    for index, state in automata.states.items():
+        if state.is_accepting:
+            sts.append(state)
+    return sts
 
 
 def epsilon_clsr(automata, states, edge_name):
@@ -94,3 +103,45 @@ def find_new_states(states_array, automata, symbols):
     if found:
         return True
     return False
+
+
+def create_one_symbol_nka(symbol, qindex):
+    init_state = NKAState('q' + str(qindex))
+    qindex = qindex + 1
+    init_state.is_initial = True
+    symbol_state = NKAState('q' + str(qindex))
+    symbol_state.is_accepting = True
+    init_state.add_edge(symbol, 'q' + str(qindex))
+    qindex = qindex + 1
+    # states = [init_state, symbol_state]
+    states = {}
+    states[init_state.index] = init_state
+    states[symbol_state.index] = symbol_state
+    automata = NKAutomata(states, symbol)
+    return automata, qindex
+
+
+def nka_union(nka1, nka2, qindex):
+    return 0, 0
+
+
+def nka_concat(nka1, nka2, qindex):
+    return
+
+
+# TODO ale pozor radsej cez kopiu premennej
+
+
+def nka_iteration(nka, qindex):
+    starting_state = find_starting_state(nka)
+    starting_state.is_initial = False
+    accepting_states = find_accepting_states(nka)
+    for state in accepting_states:
+        state.edges[''] = starting_state.index
+    new_starting_state = NKAState('q' + str(qindex))
+    qindex += 1
+    new_starting_state.is_accepting = True
+    new_starting_state.is_initial = True
+    new_starting_state.edges[''] = starting_state.index
+    nka.states[new_starting_state.index] = new_starting_state
+    return nka, qindex
