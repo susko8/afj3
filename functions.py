@@ -122,26 +122,36 @@ def create_one_symbol_nka(symbol, qindex):
 
 
 def nka_union(nka1, nka2, qindex):
+    new_nka1 = copy.deepcopy(nka1)
+    new_nka2 = copy.deepcopy(nka2)
     return 0, 0
 
 
 def nka_concat(nka1, nka2, qindex):
-    return
+    new_nka1 = copy.deepcopy(nka1)
+    new_nka2 = copy.deepcopy(nka2)
+    # TODO konstrukcia jedneho automatu
+    # accepting_states_n1 = find_accepting_states(new_nka1)
+    # starting_state_n2 = find_starting_state(new_nka2)
+    # for s in accepting_states_n1:
+    #
+    return 0,0
 
 
 # TODO ale pozor radsej cez kopiu premennej
 
 
 def nka_iteration(nka, qindex):
-    starting_state = find_starting_state(nka)
+    new_nka = copy.deepcopy(nka)
+    starting_state = find_starting_state(new_nka)
     starting_state.is_initial = False
-    accepting_states = find_accepting_states(nka)
-    for state in accepting_states:
-        state.edges[''] = starting_state.index
+    accepting_states = find_accepting_states(new_nka)
+    for s in accepting_states:
+        s.add_edge('', starting_state.index)
     new_starting_state = NKAState('q' + str(qindex))
     qindex += 1
-    new_starting_state.is_accepting = True
+    new_nka.states[new_starting_state.index] = new_starting_state
     new_starting_state.is_initial = True
-    new_starting_state.edges[''] = starting_state.index
-    nka.states[new_starting_state.index] = new_starting_state
-    return nka, qindex
+    new_starting_state.is_accepting = True
+    new_starting_state.add_edge('', starting_state.index)
+    return new_nka, qindex

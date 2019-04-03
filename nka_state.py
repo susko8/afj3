@@ -9,7 +9,7 @@ class NKAState:
         self.edges = defaultdict(list)
 
     def add_edge(self, symbol, to_edge_index):
-        self.edges[symbol] = to_edge_index
+        self.edges[symbol].append(to_edge_index)
 
     def __repr__(self):
         # return '\nindex: ' + self.index + ',  is_initial: ' + str(self.is_initial) \
