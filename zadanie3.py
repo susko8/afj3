@@ -25,6 +25,7 @@ for line in filecontent:
             line_index2 = int(line[2]) - 1
             basic_nka, automata_index, qindex = fns.nka_union(nka_list[line_index1], nka_list[line_index2],
                                                               automata_index, qindex)
+            automata_index += 1
             nka_list.append(basic_nka)
         elif line[0] == 'C':
             line = line.split(',')
@@ -32,6 +33,7 @@ for line in filecontent:
             line_index2 = int(line[2]) - 1
             basic_nka, automata_index, qindex = fns.nka_concat(nka_list[line_index1], nka_list[line_index2],
                                                                automata_index, qindex)
+            automata_index += 1
             nka_list.append(basic_nka)
         else:
             line = line.split(',')
@@ -40,10 +42,8 @@ for line in filecontent:
             automata_index += 1
             nka_list.append(basic_nka)
 
-# TODO treba drzat index, kvoli tomu aby nove automaty davali zmysel aby sa v tom lahsie orientovalo
-# Pozor na index pri riadkoch, musi byt od neho odratana jednotka
-
+# Tvar indexu je nasledovny : a'idkonstruovanehoautomatu'q'idstavu'
 
 # konverzia posledneho vstupu
-# print('td', nka_list[-1])
-# dka_constructor(nka_list[-1], symbols)
+print(nka_list[-1])
+dka_constructor(nka_list[-1], symbols)

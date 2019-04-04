@@ -24,17 +24,21 @@ def epsilon_clsr(automata, states, edge_name):
     result = []
     if edge_name == '':
         result = in_states
-
-    for key, value in automata_states.items():
-        for state in in_states:
-            if key in state.edges[edge_name]:
-                result.append(automata_states[key])
-    for key, value in automata_states.items():
-        for state in result:
-            if key == state.index:
-                break
-            if key in state.edges[edge_name] or key in state.edges['']:
-                result.append(automata_states[key])
+    for key1, value1 in automata_states.items():
+        for state1 in in_states:
+            if key1 in state1.edges[edge_name]:
+                result.append(automata_states[key1])
+    #####
+    restart = True
+    while restart:
+        restart = False
+        for key2, value in automata_states.items():
+            for state2 in result:
+                if key2 == state2.index:
+                    break
+                if key2 in state2.edges['']:
+                    restart = True
+                    result.append(automata_states[key2])
     result = list(dict.fromkeys(result))
     result.sort(key=lambda state: state.index)
     return result
@@ -83,6 +87,8 @@ def init_trap_states(table, dka_states, symlen):
 def fill_nka_to_dka_states(first_state, automata, symbols):
     result = [first_state]
     if not find_new_states(result, automata, symbols):
+        print('!!!!!!!!!!!!!!!!0', result[0])
+        print('!!!!!!!!!!!!!!!!1', result[1])
         return result
     else:
         find_new_states(result, automata, symbols)
@@ -103,8 +109,7 @@ def find_new_states(states_array, automata, symbols):
     return False
 
 
-def reindex_automata(old_nka, automata_index):
-    qindex = 0
+def reindex_automata(old_nka, automata_index, qindex):
     new_indexes_map = {}
     new_states = {}
     new_symbols = []
@@ -124,7 +129,7 @@ def reindex_automata(old_nka, automata_index):
             for edge in edges:
                 new_states[new_indexes_map[index3]].add_edge(key, new_indexes_map[edge])
     to_return = NKAutomata(new_states, new_symbols)
-    return to_return
+    return to_return, qindex
 
 
 def create_one_symbol_nka(symbol, automata_index, qindex):
@@ -154,20 +159,38 @@ def nka_union(nka1, nka2, automata_index, qindex):
 def nka_concat(nka1, nka2, automata_index, qindex):
     in_nka1 = copy.deepcopy(nka1)
     in_nka2 = copy.deepcopy(nka2)
-    in_nka1 = reindex_automata(in_nka1, automata_index)
+    in_nka1, qindex = reindex_automata(in_nka1, automata_index, qindex)
     automata_index += 1
-    in_nka2 = reindex_automata(in_nka2, automata_index)
-    automata_index += 1
-    # print(in_nka1)
-    # print(in_nka1)
-
-    return nka1, automata_index, qindex
+    in_nka2, qindex = reindex_automata(in_nka2, automata_index, qindex)
+    print(in_nka1)
+    print(in_nka2)
+    initial_state_nka2 = find_starting_state(in_nka2)
+    initial_state_nka2.is_initial = False
+    accepting_states_nka1 = find_accepting_states(in_nka1)
+    for s in accepting_states_nka1:
+        s.is_accepting = False
+        s.add_edge('', initial_state_nka2.index)
+    new_states = {}
+    new_symbols = []
+    # TODO aby nebol index dvojity
+    for key1, st1 in in_nka1.states.items():
+        new_states[st1.index] = st1
+    for key2, st2 in in_nka2.states.items():
+        new_states[st2.index] = st2
+    for sym1 in in_nka1.symbols:
+        new_symbols.append(sym1)
+    for sym2 in in_nka2.symbols:
+        if sym2 not in new_symbols:
+            new_symbols.append(sym2)
+    to_return = NKAutomata(new_states, new_symbols)
+    print(to_return)
+    return to_return, automata_index, qindex
 
 
 def nka_iteration(nka, automata_index, qindex):
     new_nka = copy.deepcopy(nka)
     # funkcia vracia qindex aby boli nove indexy pekne zoradene
-    new_nka = reindex_automata(new_nka, automata_index)
+    new_nka, qindex = reindex_automata(new_nka, automata_index, qindex)
     starting_state = find_starting_state(new_nka)
     starting_state.is_initial = False
     accepting_states = find_accepting_states(new_nka)
