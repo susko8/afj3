@@ -3,9 +3,6 @@ class NKAutomata:
         self.states = states
         self.symbols = symbols
 
-    def to_dka(self):
-        return 'konverzia'
-
     def __repr__(self):
         s = 'NKA: \n'
         for i, item in self.states.items():

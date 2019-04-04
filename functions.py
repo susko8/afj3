@@ -37,8 +37,6 @@ def epsilon_clsr(automata, states, edge_name):
                 result.append(automata_states[key])
     result = list(dict.fromkeys(result))
     result.sort(key=lambda state: state.index)
-    # print('cslr_in', in_states, edge_name)
-    # print('cslr_res', result)
     return result
 
 
@@ -105,50 +103,77 @@ def find_new_states(states_array, automata, symbols):
     return False
 
 
-def create_one_symbol_nka(symbol, qindex):
-    init_state = NKAState('q' + str(qindex))
-    qindex = qindex + 1
+def reindex_automata(old_nka, automata_index):
+    qindex = 0
+    new_indexes_map = {}
+    new_states = {}
+    new_symbols = []
+    old_nka = copy.deepcopy(old_nka)
+    for symbol in old_nka.symbols:
+        new_symbols.append(symbol)
+    for state1 in old_nka.states:
+        new_indexes_map[state1] = 'a' + str(automata_index) + 'q' + str(qindex)
+        qindex += 1
+    for index2, state2 in old_nka.states.items():
+        nstate = NKAState(new_indexes_map[index2])
+        nstate.is_accepting = state2.is_accepting
+        nstate.is_initial = state2.is_initial
+        new_states[nstate.index] = nstate
+    for index3, state3 in old_nka.states.items():
+        for key, edges in state3.edges.items():
+            for edge in edges:
+                new_states[new_indexes_map[index3]].add_edge(key, new_indexes_map[edge])
+    to_return = NKAutomata(new_states, new_symbols)
+    return to_return
+
+
+def create_one_symbol_nka(symbol, automata_index, qindex):
+    init_state = NKAState('a' + str(automata_index) + 'q' + str(qindex))
+    qindex += 1
     init_state.is_initial = True
-    symbol_state = NKAState('q' + str(qindex))
+    symbol_state = NKAState('a' + str(automata_index) + 'q' + str(qindex))
     symbol_state.is_accepting = True
-    init_state.add_edge(symbol, 'q' + str(qindex))
-    qindex = qindex + 1
-    # states = [init_state, symbol_state]
-    states = {}
-    states[init_state.index] = init_state
-    states[symbol_state.index] = symbol_state
+    init_state.add_edge(symbol, 'a' + str(automata_index) + 'q' + str(qindex))
+    qindex += 1
+    states = {init_state.index: init_state, symbol_state.index: symbol_state}
     automata = NKAutomata(states, symbol)
     return automata, qindex
 
 
-def nka_union(nka1, nka2, qindex):
-    new_nka1 = copy.deepcopy(nka1)
-    new_nka2 = copy.deepcopy(nka2)
-    return 0, 0
+def nka_union(nka1, nka2, automata_index, qindex):
+    in_nka1 = copy.deepcopy(nka1)
+    in_nka2 = copy.deepcopy(nka2)
+    new_states = []
+    for s1 in in_nka1:
+        new_states.append(s1)
+    for s2 in in_nka2:
+        new_states.append(s2)
+    return nka1, automata_index, qindex
 
 
-def nka_concat(nka1, nka2, qindex):
-    new_nka1 = copy.deepcopy(nka1)
-    new_nka2 = copy.deepcopy(nka2)
-    # TODO konstrukcia jedneho automatu
-    # accepting_states_n1 = find_accepting_states(new_nka1)
-    # starting_state_n2 = find_starting_state(new_nka2)
-    # for s in accepting_states_n1:
-    #
-    return 0,0
+def nka_concat(nka1, nka2, automata_index, qindex):
+    in_nka1 = copy.deepcopy(nka1)
+    in_nka2 = copy.deepcopy(nka2)
+    in_nka1 = reindex_automata(in_nka1, automata_index)
+    automata_index += 1
+    in_nka2 = reindex_automata(in_nka2, automata_index)
+    automata_index += 1
+    # print(in_nka1)
+    # print(in_nka1)
+
+    return nka1, automata_index, qindex
 
 
-# TODO ale pozor radsej cez kopiu premennej
-
-
-def nka_iteration(nka, qindex):
+def nka_iteration(nka, automata_index, qindex):
     new_nka = copy.deepcopy(nka)
+    # funkcia vracia qindex aby boli nove indexy pekne zoradene
+    new_nka = reindex_automata(new_nka, automata_index)
     starting_state = find_starting_state(new_nka)
     starting_state.is_initial = False
     accepting_states = find_accepting_states(new_nka)
     for s in accepting_states:
         s.add_edge('', starting_state.index)
-    new_starting_state = NKAState('q' + str(qindex))
+    new_starting_state = NKAState('a' + str(automata_index) + 'q' + str(qindex))
     qindex += 1
     new_nka.states[new_starting_state.index] = new_starting_state
     new_starting_state.is_initial = True

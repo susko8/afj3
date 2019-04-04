@@ -6,13 +6,15 @@ from nka_automata import NKAutomata
 from dka_state import DKAState
 from dka_automata import DKAutomata
 
+automata_index = 0
 qindex = 0
 filecontent = fr.read_file()
 symbols = []
 nka_list = []
 for line in filecontent:
     if len(line) == 1 or len(line) == 0:
-        basic_nka, qindex = fns.create_one_symbol_nka(line, qindex)
+        basic_nka, qindex = fns.create_one_symbol_nka(line, automata_index, qindex)
+        automata_index += 1
         nka_list.append(basic_nka)
         if len(line) == 1:
             symbols.append(line)
@@ -21,18 +23,21 @@ for line in filecontent:
             line = line.split(',')
             line_index1 = int(line[1]) - 1
             line_index2 = int(line[2]) - 1
-            basic_nka, qindex = fns.nka_union(nka_list[line_index1], nka_list[line_index2], qindex)
+            basic_nka, automata_index, qindex = fns.nka_union(nka_list[line_index1], nka_list[line_index2],
+                                                              automata_index, qindex)
             nka_list.append(basic_nka)
         elif line[0] == 'C':
             line = line.split(',')
             line_index1 = int(line[1]) - 1
             line_index2 = int(line[2]) - 1
-            basic_nka, qindex = fns.nka_concat(nka_list[line_index1], nka_list[line_index2], qindex)
+            basic_nka, automata_index, qindex = fns.nka_concat(nka_list[line_index1], nka_list[line_index2],
+                                                               automata_index, qindex)
             nka_list.append(basic_nka)
         else:
             line = line.split(',')
             line_index = int(line[1]) - 1
-            basic_nka, qindex = fns.nka_iteration(nka_list[line_index], qindex)
+            basic_nka, qindex = fns.nka_iteration(nka_list[line_index], automata_index, qindex)
+            automata_index += 1
             nka_list.append(basic_nka)
 
 # TODO treba drzat index, kvoli tomu aby nove automaty davali zmysel aby sa v tom lahsie orientovalo
@@ -40,4 +45,5 @@ for line in filecontent:
 
 
 # konverzia posledneho vstupu
+# print('td', nka_list[-1])
 # dka_constructor(nka_list[-1], symbols)
