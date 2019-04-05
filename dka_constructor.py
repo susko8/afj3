@@ -56,7 +56,7 @@ def dka_constructor(nka, symbols):
 
     print(dka)
 
-    #TODO
+    # TODO
     # zapis vysledku
     # fr.write_result_to_file(dka.file_repr())
 

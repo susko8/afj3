@@ -28,16 +28,18 @@ def epsilon_clsr(automata, states, edge_name):
         for state1 in in_states:
             if key1 in state1.edges[edge_name]:
                 result.append(automata_states[key1])
-    #####
-    restart = True
-    while restart:
-        restart = False
+    for key2, value in automata_states.items():
+        for state2 in result:
+            if key2 == state2.index:
+                break
+            if key2 in state2.edges['']:
+                result.append(automata_states[key2])
+    for i in range(1, len(automata.states) ** 2):
         for key2, value in automata_states.items():
             for state2 in result:
                 if key2 == state2.index:
                     break
                 if key2 in state2.edges['']:
-                    restart = True
                     result.append(automata_states[key2])
     result = list(dict.fromkeys(result))
     result.sort(key=lambda state: state.index)
@@ -87,8 +89,6 @@ def init_trap_states(table, dka_states, symlen):
 def fill_nka_to_dka_states(first_state, automata, symbols):
     result = [first_state]
     if not find_new_states(result, automata, symbols):
-        print('!!!!!!!!!!!!!!!!0', result[0])
-        print('!!!!!!!!!!!!!!!!1', result[1])
         return result
     else:
         find_new_states(result, automata, symbols)
@@ -144,35 +144,24 @@ def create_one_symbol_nka(symbol, automata_index, qindex):
     automata = NKAutomata(states, symbol)
     return automata, qindex
 
-
 def nka_union(nka1, nka2, automata_index, qindex):
-    in_nka1 = copy.deepcopy(nka1)
-    in_nka2 = copy.deepcopy(nka2)
-    new_states = []
-    for s1 in in_nka1:
-        new_states.append(s1)
-    for s2 in in_nka2:
-        new_states.append(s2)
-    return nka1, automata_index, qindex
-
-
-def nka_concat(nka1, nka2, automata_index, qindex):
     in_nka1 = copy.deepcopy(nka1)
     in_nka2 = copy.deepcopy(nka2)
     in_nka1, qindex = reindex_automata(in_nka1, automata_index, qindex)
     automata_index += 1
     in_nka2, qindex = reindex_automata(in_nka2, automata_index, qindex)
-    print(in_nka1)
-    print(in_nka2)
+    initial_state_nka1 = find_starting_state(in_nka1)
+    initial_state_nka1.is_initial = False
     initial_state_nka2 = find_starting_state(in_nka2)
     initial_state_nka2.is_initial = False
-    accepting_states_nka1 = find_accepting_states(in_nka1)
-    for s in accepting_states_nka1:
-        s.is_accepting = False
-        s.add_edge('', initial_state_nka2.index)
+    new_starting_state = NKAState('a' + str(automata_index) + 'q' + str(qindex))
+    new_starting_state.is_initial = True
+    qindex += 1
+    new_starting_state.add_edge('', initial_state_nka1.index)
+    new_starting_state.add_edge('', initial_state_nka2.index)
     new_states = {}
     new_symbols = []
-    # TODO aby nebol index dvojity
+    new_states[new_starting_state.index] = new_starting_state
     for key1, st1 in in_nka1.states.items():
         new_states[st1.index] = st1
     for key2, st2 in in_nka2.states.items():
@@ -183,7 +172,33 @@ def nka_concat(nka1, nka2, automata_index, qindex):
         if sym2 not in new_symbols:
             new_symbols.append(sym2)
     to_return = NKAutomata(new_states, new_symbols)
-    print(to_return)
+    return to_return, automata_index, qindex
+
+
+def nka_concat(nka1, nka2, automata_index, qindex):
+    in_nka1 = copy.deepcopy(nka1)
+    in_nka2 = copy.deepcopy(nka2)
+    in_nka1, qindex = reindex_automata(in_nka1, automata_index, qindex)
+    automata_index += 1
+    in_nka2, qindex = reindex_automata(in_nka2, automata_index, qindex)
+    initial_state_nka2 = find_starting_state(in_nka2)
+    initial_state_nka2.is_initial = False
+    accepting_states_nka1 = find_accepting_states(in_nka1)
+    for s in accepting_states_nka1:
+        s.is_accepting = False
+        s.add_edge('', initial_state_nka2.index)
+    new_states = {}
+    new_symbols = []
+    for key1, st1 in in_nka1.states.items():
+        new_states[st1.index] = st1
+    for key2, st2 in in_nka2.states.items():
+        new_states[st2.index] = st2
+    for sym1 in in_nka1.symbols:
+        new_symbols.append(sym1)
+    for sym2 in in_nka2.symbols:
+        if sym2 not in new_symbols:
+            new_symbols.append(sym2)
+    to_return = NKAutomata(new_states, new_symbols)
     return to_return, automata_index, qindex
 
 

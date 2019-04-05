@@ -21,8 +21,10 @@ class DKAutomata:
             for s in self.symbols:
                 result_string += str(states).replace('[', '').replace(']',
                                                                       '').replace(
-                    'F', '').replace('I', '').replace(' ','') + ',' + s + ',' + str(states.edges[s]).replace('[', '').replace(']',
+                    'F', '').replace('I', '').replace(' ', '') + ',' + s + ',' + str(states.edges[s]).replace('[',
                                                                                                               '').replace(
+                    ']',
+                    '').replace(
                     'F', '').replace('I', '') + '\n'
         return result_string
 
@@ -48,3 +50,4 @@ class DKAutomata:
         for states in self.states:
             if [states] == arr:
                 return states
+

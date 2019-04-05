@@ -1,23 +1,16 @@
 import freader as fr
 import functions as fns
 from dka_constructor import dka_constructor
-from nka_state import NKAState
-from nka_automata import NKAutomata
-from dka_state import DKAState
-from dka_automata import DKAutomata
 
 automata_index = 0
 qindex = 0
 filecontent = fr.read_file()
-symbols = []
 nka_list = []
 for line in filecontent:
     if len(line) == 1 or len(line) == 0:
         basic_nka, qindex = fns.create_one_symbol_nka(line, automata_index, qindex)
         automata_index += 1
         nka_list.append(basic_nka)
-        if len(line) == 1:
-            symbols.append(line)
     else:
         if line[0] == 'U':
             line = line.split(',')
@@ -46,4 +39,4 @@ for line in filecontent:
 
 # konverzia posledneho vstupu
 print(nka_list[-1])
-dka_constructor(nka_list[-1], symbols)
+dka_constructor(nka_list[-1], nka_list[-1].symbols)
