@@ -56,9 +56,10 @@ def dka_constructor(nka, symbols):
 
     print(dka)
 
-    # TODO
-    # zapis vysledku
-    # fr.write_result_to_file(dka.file_repr())
+    #zapis vysledneho nka
+    fr.write_nka_to_file(nka.file_repr())
+    # zapis vysledneho dka
+    fr.write_dka_to_file(dka.file_repr())
 
     # Testovanie DKA
     print('Zadajte vstup pre jeho validaciu DKA automatom:')
